@@ -36,6 +36,7 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var tbVideo: UITableView!
     @IBOutlet weak var tfSearch: UITextField!
+    @IBOutlet weak var lbStatus: UILabel!
     
     // can fix
     let myChannelID = "UC8PsocQtzxswSn7OVISncgg"
@@ -61,7 +62,7 @@ class ViewController: UIViewController {
         GIDSignIn.sharedInstance().signInSilently()
         
         
-        
+      
         // Add the sign-in button.
         view.addSubview(signInButton)
         signInButton.center = self.view.center
@@ -82,8 +83,8 @@ class ViewController: UIViewController {
     
     
     func createList(listVideoToCreate: [Video], titlePlayList: String, completion: @escaping () -> Void) {
-        
-        
+        let queueSerial = DispatchQueue(label: "serial")
+        var count = 0
         let newPlaylist = GTLRYouTube_Playlist()
         newPlaylist.snippet = GTLRYouTube_PlaylistSnippet()
         newPlaylist.snippet?.title = titlePlayList
@@ -93,56 +94,48 @@ class ViewController: UIViewController {
         newPlaylist.status?.privacyStatus = kGTLRYouTube_PlaylistStatus_PrivacyStatus_Public
         
         let query = GTLRYouTubeQuery_PlaylistsInsert.query(withObject: newPlaylist, part: "snippet,status")
-        
+    
         
         self.service.executeQuery(query) { (ticket, object, error) in
             guard let _object = object as? GTLRYouTube_Playlist else {
                 print("Done")
+                PopUpHelper.showMessage(message: "Thanh Cong", controller: self)
                 GIDSignIn.sharedInstance().signOut()
                 return
             }
             
             if error == nil {
-                self.insertVideo(idPlayList: _object.identifier!, listVideoToCreate: listVideoToCreate, index: 0, completion: {
-                    completion()
+                listVideoToCreate.forEach({ video in
+                    queueSerial.sync {
+                        let newPlayListItem = GTLRYouTube_PlaylistItem()
+                        newPlayListItem.snippet = GTLRYouTube_PlaylistItemSnippet()
+                        newPlayListItem.snippet?.playlistId = _object.identifier
+                        newPlayListItem.snippet?.resourceId = GTLRYouTube_ResourceId()
+                        newPlayListItem.snippet?.resourceId?.kind = "youtube#video"
+                        newPlayListItem.snippet?.resourceId?.videoId = video.id!
+                        
+                        let queryVideo = GTLRYouTubeQuery_PlaylistItemsInsert.query(withObject: newPlayListItem, part: "snippet")
+                        
+                        self.service.executeQuery(queryVideo, completionHandler: { (_, _, errorVideo) in
+                            if error == nil {
+                                self.lbStatus.text = "Done insert video: \(video.title!)"
+                                count += 1
+                                
+                                if count >= listVideoToCreate.count - 1 {
+                                    completion()
+                                }
+                            } else {
+                                print("Error insert video")
+                            }
+                        })
+                    }
                 })
             } else {
-                PopUpHelper.showMessage(message: (error?.localizedDescription)!, controller: self)
+                print(error?.localizedDescription)
             }
             
         }
         
-    }
-    
-    func insertVideo(idPlayList: String, listVideoToCreate: [Video], index: Int, completion: @escaping () -> Void) {
-        var currentIndex = index
-        
-        let newPlayListItem = GTLRYouTube_PlaylistItem()
-        newPlayListItem.snippet = GTLRYouTube_PlaylistItemSnippet()
-        newPlayListItem.snippet?.playlistId = idPlayList
-        newPlayListItem.snippet?.resourceId = GTLRYouTube_ResourceId()
-        newPlayListItem.snippet?.resourceId?.kind = "youtube#video"
-        newPlayListItem.snippet?.resourceId?.videoId = listVideoToCreate[index].id!
-        
-        let queryVideo = GTLRYouTubeQuery_PlaylistItemsInsert.query(withObject: newPlayListItem, part: "snippet")
-        
-        self.service.executeQuery(queryVideo, completionHandler: { (_, _, errorVideo) in
-            if errorVideo == nil {
-                print("Done insert video: \(listVideoToCreate[index].title!)")
-                currentIndex += 1
-                
-                if currentIndex >= listVideoToCreate.count - 1 {
-                    completion()
-                } else {
-                    self.insertVideo(idPlayList: idPlayList, listVideoToCreate: listVideoToCreate, index: currentIndex, completion: {
-                        //done
-                        completion()
-                    })
-                }
-            } else {
-                print("Error insert video")
-            }
-        })
     }
     
 }
@@ -156,6 +149,10 @@ extension ViewController {
             return _video.isSelected == true
         })
         
+//        self.listMyVideoSelected = self.listMyVideo.filter({ _video -> Bool in
+//            return _video.isSelected == true
+//        })
+        
         if checkCanCreate() {
             // video to create = listMyVideoSelected + 50 video search
             var listToCreate = self.listMyVideoSelected
@@ -164,20 +161,20 @@ extension ViewController {
                 listToCreate.append(itemVideo)
             }
             
-            createOnePlaylist(listVideoToCreate: listToCreate, index: 0)
-        }
-    }
-    
-    func createOnePlaylist(listVideoToCreate: [Video], index: Int) {
-        var indexCurrent = index
-        self.createList(listVideoToCreate: listVideoToCreate, titlePlayList: self.listVideoSelected[index].title!) {
-            indexCurrent += 1
-            self.createOnePlaylist(listVideoToCreate: listVideoToCreate, index: indexCurrent)
-            
-            if indexCurrent == 9 {
-                print("Ok Done")
-                GIDSignIn.sharedInstance().signOut()
-                return
+            let queue = DispatchQueue(label: "Queue List")
+            var countList = 0
+            for videoPlaylist in self.listVideoSelected {
+                queue.sync {
+                    self.createList(listVideoToCreate: listToCreate, titlePlayList: videoPlaylist.title!, completion: {
+                        countList += 1
+                        
+                        if countList == 9 {
+                        PopUpHelper.showMessage(message: "Thanh Cong", controller: self)
+                           GIDSignIn.sharedInstance().signOut()
+                        }
+                    })
+                }
+                
             }
         }
     }
@@ -273,7 +270,7 @@ extension ViewController:  GIDSignInDelegate, GIDSignInUIDelegate {
     // delegate google
     func sign(_ signIn: GIDSignIn!, didSignInFor user: GIDGoogleUser!,
               withError error: Error!) {
-        //          GIDSignIn.sharedInstance().signOut()
+//          GIDSignIn.sharedInstance().signOut()
         if let error = error {
             PopUpHelper.showMessage(message: error.localizedDescription,controller: self)
             self.service.authorizer = nil
@@ -306,9 +303,9 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tbVideo.dequeueReusableCell(withIdentifier: "cellId", for: indexPath) as! VideoCell
         if indexPath.section == 1 {
-            cell.video = self.listVideo[indexPath.item]
+             cell.video = self.listVideo[indexPath.item]
         } else {
-            cell.video = self.listMyVideo[indexPath.item]
+             cell.video = self.listMyVideo[indexPath.item]
         }
         
         cell.lbTitle.text = "\(indexPath.item +  1). \(cell.lbTitle.text!)"
@@ -340,7 +337,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     }
     
     func checkContaint(video: Video) -> Bool {
-        let containt =  self.listMyVideoSelected.contains { _video -> Bool in
+       let containt =  self.listMyVideoSelected.contains { _video -> Bool in
             return _video.id == video.id
         }
         

@@ -101,26 +101,39 @@
                                 </constraints>
                             </view>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="QE1-pq-8fI">
-                                <rect key="frame" x="0.0" y="70" width="375" height="547"/>
+                                <rect key="frame" x="0.0" y="70" width="375" height="497"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </tableView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Y1G-AR-gnV">
+                                <rect key="frame" x="5" y="567" width="365" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="im9-Hj-II6"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="Y1G-AR-gnV" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="5" id="4Fo-vs-UnW"/>
                             <constraint firstItem="itY-uD-HN0" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="9co-A4-a6q"/>
                             <constraint firstItem="itY-uD-HN0" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="DSI-uG-275"/>
                             <constraint firstItem="QE1-pq-8fI" firstAttribute="top" secondItem="itY-uD-HN0" secondAttribute="bottom" id="Egt-pb-oUg"/>
-                            <constraint firstItem="d4U-tx-2pw" firstAttribute="top" secondItem="QE1-pq-8fI" secondAttribute="bottom" id="Os0-Pd-mnH"/>
+                            <constraint firstItem="d4U-tx-2pw" firstAttribute="top" secondItem="QE1-pq-8fI" secondAttribute="bottom" constant="50" id="Os0-Pd-mnH"/>
                             <constraint firstItem="QE1-pq-8fI" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="Sml-4T-mJl"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="d4U-tx-2pw" secondAttribute="trailing" id="W3d-46-KjJ"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="QE1-pq-8fI" secondAttribute="trailing" id="W7F-rB-Sx8"/>
                             <constraint firstItem="itY-uD-HN0" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="XqD-d6-8XL"/>
+                            <constraint firstItem="d4U-tx-2pw" firstAttribute="top" secondItem="Y1G-AR-gnV" secondAttribute="bottom" id="c3T-bJ-34j"/>
                             <constraint firstItem="d4U-tx-2pw" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="dTU-Ab-7LP"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Y1G-AR-gnV" secondAttribute="trailing" constant="5" id="igh-Gw-7px"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="d4U-tx-2pw" secondAttribute="bottom" id="x5r-VC-879"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="lbStatus" destination="Y1G-AR-gnV" id="Mi9-gv-6Fp"/>
                         <outlet property="tbVideo" destination="QE1-pq-8fI" id="Awv-fe-iGY"/>
                         <outlet property="tfSearch" destination="5mQ-h0-aW8" id="aVs-cQ-GqE"/>
                     </connections>
